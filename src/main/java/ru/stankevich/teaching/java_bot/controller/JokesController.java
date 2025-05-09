@@ -29,8 +29,12 @@ public class JokesController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Jokes>> getAllJokes(@RequestParam(value = "title", required = false) String title) {
-        List<Jokes> jokes = jokesService.getAllJokes(title);
+    public ResponseEntity<List<Jokes>> getAllJokes(
+            @RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "page") int page,
+            @RequestParam(value = "size", required = false, defaultValue = "50") Integer size
+    ) {
+        List<Jokes> jokes = jokesService.getAllJokes(title, page, size);
         return ResponseEntity.ok(jokes);
     }
 

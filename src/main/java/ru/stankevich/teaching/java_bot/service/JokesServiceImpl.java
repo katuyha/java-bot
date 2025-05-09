@@ -2,15 +2,16 @@ package ru.stankevich.teaching.java_bot.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.stankevich.teaching.java_bot.exceptions.JokesNotFoundExceptions;
 import ru.stankevich.teaching.java_bot.model.Jokes;
 import ru.stankevich.teaching.java_bot.repository.JokesRepository;
-
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+
 
 @RequiredArgsConstructor
 @Service
@@ -27,13 +28,13 @@ public class JokesServiceImpl implements JokesService{
         return jokesRepository.save(joke);
     }
 
-    public List<Jokes> getAllJokes(String title) {
-        if (title != null) {
-            return StreamSupport.stream(jokesRepository.findAll().spliterator(), false)
-                    .filter(joke -> title.equals(joke.getTitle()))
-                    .collect(Collectors.toList());
+    public List<Jokes> getAllJokes(String title, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("title").ascending());
+
+        if (title != null && !title.isEmpty()) {
+            return jokesRepository.findByTitleContainingIgnoreCase(title, pageable).getContent();
         } else {
-            return (List<Jokes>) jokesRepository.findAll();
+            return jokesRepository.findAll(pageable).getContent();
         }
     }
 

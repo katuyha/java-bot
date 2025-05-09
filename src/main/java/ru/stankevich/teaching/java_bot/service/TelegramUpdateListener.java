@@ -7,8 +7,11 @@ import com.pengrad.telegrambot.request.SendMessage;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import ru.stankevich.teaching.java_bot.model.ChallengesJokes;
 import ru.stankevich.teaching.java_bot.model.Jokes;
+import ru.stankevich.teaching.java_bot.repository.ChallengesJokesRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
@@ -16,10 +19,12 @@ public class TelegramUpdateListener implements UpdatesListener {
 
     private final JokesService jokesService;
     private final TelegramBot telegramBot;
+    private final ChallengesJokesRepository challengesJokesRepository;
 
-    public TelegramUpdateListener(JokesService jokesService, TelegramBot telegramBot) {
+    public TelegramUpdateListener(JokesService jokesService, TelegramBot telegramBot, ChallengesJokesRepository challengesJokesRepository) {
         this.jokesService = jokesService;
         this.telegramBot = telegramBot;
+        this.challengesJokesRepository = challengesJokesRepository;
     }
 
     @Override
@@ -35,13 +40,21 @@ public class TelegramUpdateListener implements UpdatesListener {
                 }
 
                 if (update.message().text().equals("/jokes")) {
-                    List<Jokes> jokes = jokesService.getAllJokes(null);
+                    List<Jokes> jokes = jokesService.getAllJokes(null, 0, 50);
 
                     if (!jokes.isEmpty()) {
                         Jokes joke = jokes.get((int) (Math.random() * jokes.size()));
                         String text = '"'+ joke.getTitle() + '"' +'.'+ "\n" + joke.getContent();
                         telegramBot.execute(new SendMessage(update.message().chat().id(), text));
+
+                        // Записываем вызов шутки в БД
+                        ChallengesJokes call = new ChallengesJokes();
+                        call.setJokes(joke);
+                        call.setUserId(chatId);
+                        call.setDateTime(LocalDateTime.now());
+                        challengesJokesRepository.save(call);
                     }
+
                 }
             }
         }

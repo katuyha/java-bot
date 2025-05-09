@@ -8,8 +8,7 @@ public interface JokesService {
 
     public Jokes addJokes(Jokes joke);
 
-    public List<Jokes> getAllJokes(String title);
-
+    List<Jokes> getAllJokes(String title, int page, int size);
 
     public Jokes getJokesById(Long id);
 
