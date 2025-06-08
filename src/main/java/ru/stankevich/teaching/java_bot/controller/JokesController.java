@@ -3,6 +3,7 @@ package ru.stankevich.teaching.java_bot.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import ru.stankevich.teaching.java_bot.model.Jokes;
 import ru.stankevich.teaching.java_bot.service.JokesService;
@@ -22,11 +23,13 @@ public class JokesController {
         this.jokesService = jokesService;
     }
 
+    @Secured({"ROLE_USER", "ROLE_MODERATOR", "ROLE_ADMIN"})
     @PostMapping
     public ResponseEntity<Jokes> addJokes(@RequestBody Jokes joke) {
         Jokes saved = jokesService.addJokes(joke);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
+
 
     @GetMapping
     public ResponseEntity<List<Jokes>> getAllJokes(
@@ -44,12 +47,14 @@ public class JokesController {
         return ResponseEntity.ok(joke);
     }
 
+    @Secured({"ROLE_MODERATOR"})
     @PutMapping("/{id}")
     public ResponseEntity<Void> editJokes(@PathVariable("id") Long id, @RequestBody Jokes joke) {
         jokesService.editJokes(id, joke);
         return ResponseEntity.ok().build();
     }
 
+    @Secured({"ROLE_MODERATOR"})
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteJokes(@PathVariable("id") Long id) {
         jokesService.deleteJokes(id);
